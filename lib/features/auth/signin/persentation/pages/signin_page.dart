@@ -93,6 +93,7 @@ class SignInView extends StatelessWidget {
                           .closed
                           .then((_) {
                             // Reset error state sau khi SnackBar đóng
+                            // ignore: use_build_context_synchronously
                             context.read<SignInBloc>().add(
                               SignInErrorDismissed(),
                             );
