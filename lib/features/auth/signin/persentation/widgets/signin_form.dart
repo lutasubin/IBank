@@ -173,7 +173,7 @@ class _SignInFormState extends State<SignInForm> {
               alignment: Alignment.centerRight,
               child: TextButton(
                 onPressed: () {
-                  // TODO: Navigate to forgot password
+                  Navigator.pushNamed(context, '/forgot-password');
                 },
                 child: Text(
                   'Forgot your password ?',
@@ -268,7 +268,7 @@ class _SignInFormState extends State<SignInForm> {
                 ),
                 GestureDetector(
                   onTap: () {
-                    // TODO: Navigate to sign up
+                    Navigator.pushReplacementNamed(context, '/signup');
                   },
                   child: Text(
                     'Sign Up',
