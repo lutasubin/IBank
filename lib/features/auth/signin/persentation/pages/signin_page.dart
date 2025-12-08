@@ -100,9 +100,23 @@ class SignInView extends StatelessWidget {
                           });
                     }
                   },
-                  child: const SingleChildScrollView(
-                    padding: EdgeInsets.all(24),
-                    child: SignInForm(),
+                  child: SingleChildScrollView(
+                    padding: const EdgeInsets.all(24),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        const SignInForm(),
+                        const SizedBox(height: 16),
+                        Center(
+                          child: TextButton(
+                            onPressed: () {
+                              Navigator.pushNamed(context, '/admin-signin');
+                            },
+                            child: const Text('Đăng nhập quản trị'),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),

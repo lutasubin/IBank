@@ -1,14 +1,19 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:ibank/core/untils/validators.dart';
 import 'package:ibank/features/auth/signin/domain/usecase/signin_usecase.dart';
+import 'package:ibank/features/auth/signin/domain/entities/user_entity.dart';
 
 import 'signin_event.dart';
 import 'signin_state.dart';
 
 class SignInBloc extends Bloc<SignInEvent, SignInState> {
   final SignInUseCase signInUseCase;
+  final UserRole allowedRole;
 
-  SignInBloc({required this.signInUseCase}) : super(const SignInState()) {
+  SignInBloc({
+    required this.signInUseCase,
+    this.allowedRole = UserRole.user,
+  }) : super(const SignInState()) {
     on<SignInEmailChanged>(_onEmailChanged);
     on<SignInPasswordChanged>(_onPasswordChanged);
     on<SignInSubmitted>(_onSubmitted);
@@ -54,11 +59,22 @@ class SignInBloc extends Bloc<SignInEvent, SignInState> {
         status: SignInStatus.failure,
         errorMessage: failure.message,
       )),
-      (user) => emit(state.copyWith(
-        status: SignInStatus.success,
-        user: user,
-        errorMessage: null,
-      )),
+      (user) {
+        if (user.role != allowedRole) {
+          emit(state.copyWith(
+            status: SignInStatus.failure,
+            errorMessage:
+                'Tài khoản này không có quyền truy cập màn hình này.',
+          ));
+          return;
+        }
+
+        emit(state.copyWith(
+          status: SignInStatus.success,
+          user: user,
+          errorMessage: null,
+        ));
+      },
     );
   }
 

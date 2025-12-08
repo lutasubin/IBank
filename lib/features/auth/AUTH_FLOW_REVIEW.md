@@ -162,4 +162,13 @@
 4. Xoá/disable `MockAuthStore` khi đã có backend thật.
 5. Không cần thay đổi BLoC, UI, UseCase, route – chúng đã tách biệt với tầng data.
 
+### 9. Gán quyền admin bằng custom claim (script kèm sẵn)
+- Service account: `serviceAccountKey/ibank-12730-firebase-adminsdk-fbsvc-ccbbbe56dc.json`.
+- Script gán claim: `tools/set_admin_role.js`.
+- Lệnh chạy (bash/Git Bash):
+  ```
+  cd /c/ibank && export GOOGLE_APPLICATION_CREDENTIALS="/c/ibank/serviceAccountKey/ibank-12730-firebase-adminsdk-fbsvc-ccbbbe56dc.json" && node tools/set_admin_role.js admin@gmail.com
+  ```
+- Sau khi gán claim, đăng xuất/đăng nhập lại để token có claim mới, rồi dùng luồng `/admin-signin`.
+
 

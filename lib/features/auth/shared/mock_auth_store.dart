@@ -1,4 +1,5 @@
 import '../../auth/signin/data/models/user_model.dart';
+import '../../auth/signin/domain/entities/user_entity.dart';
 import '../../../core/error/exceptions.dart';
 
 // TODO(Firebase):
@@ -25,8 +26,18 @@ class MockAuthStore {
         id: '1',
         email: 'test@gmail.com',
         name: 'DucThanhNguyen',
+        role: UserRole.user,
       ),
       password: 'thanh123',
+    ),
+    _StoredUser(
+      user: const UserModel(
+        id: '99',
+        email: 'admin@demo.com',
+        name: 'Admin Demo',
+        role: UserRole.admin,
+      ),
+      password: 'admin123',
     ),
   ];
 
@@ -51,6 +62,7 @@ class MockAuthStore {
     required String name,
     required String email,
     required String password,
+    UserRole role = UserRole.user,
   }) async {
     final exists = _users.any((u) => u.user.email == email);
     if (exists) {
@@ -61,6 +73,7 @@ class MockAuthStore {
       id: DateTime.now().millisecondsSinceEpoch.toString(),
       email: email,
       name: name,
+      role: role,
     );
 
     _users.add(

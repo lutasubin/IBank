@@ -1,5 +1,7 @@
-import 'package:ibank/features/auth/shared/mock_auth_store.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:ibank/features/auth/signin/domain/entities/user_entity.dart';
 
+import '../../../../../core/error/exceptions.dart';
 import '../../../signin/data/models/user_model.dart';
 import '../models/signup_remote_datasource.dart';
 
@@ -15,16 +17,35 @@ class SignUpRemoteDataSourceImpl implements SignUpRemoteDataSource {
     required String name,
     required String email,
     required String password,
+    UserRole role = UserRole.user,
   }) async {
-    // Mock delay để giả lập call API / Firebase
-    await Future.delayed(const Duration(seconds: 2));
+    try {
+      final credential = await FirebaseAuth.instance
+          .createUserWithEmailAndPassword(email: email, password: password);
 
-    // Đăng ký user mới vào MockAuthStore (dùng chung với sign in)
-    return MockAuthStore.signUp(
-      name: name,
-      email: email,
-      password: password,
-    );
+      final user = credential.user;
+      if (user == null) {
+        throw const ServerException('Cannot create user');
+      }
+
+      // Cập nhật displayName để UI có tên
+      await user.updateDisplayName(name);
+
+      // Lấy custom claims role nếu backend đã set (ví dụ qua Cloud Functions)
+      final token = await user.getIdTokenResult(true);
+      final roleClaim = (token.claims?['role'] as String?) ?? role.asString;
+
+      return UserModel(
+        id: user.uid,
+        email: user.email ?? email,
+        name: user.displayName ?? name,
+        role: UserRoleX.fromString(roleClaim),
+      );
+    } on FirebaseAuthException catch (e) {
+      throw ServerException(e.message ?? 'Sign up failed');
+    } catch (e) {
+      throw ServerException(e.toString());
+    }
   }
 }
 
