@@ -7,6 +7,7 @@ import 'package:ibank/features/auth/password/persentation/pages/change_password_
 import 'package:ibank/features/home/presentation/pages/home_pages.dart';
 
 
+
 class IBankApp extends StatelessWidget {
   const IBankApp({super.key});
 
@@ -23,6 +24,8 @@ class IBankApp extends StatelessWidget {
         '/forgot-password': (context) => const ForgotPasswordPage(),
         '/change-password': (context) => const ChangePasswordPage(),
         '/home': (context) => const HomePage(),
+        // '/admin-signin': (context) => const AdminSignInPage(), //!demo phan quyen
+        // '/admin-home': (context) => const AdminHomePage(), //!demo phan quyen
       },
     );
   }

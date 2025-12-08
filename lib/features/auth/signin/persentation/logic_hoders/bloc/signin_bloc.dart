@@ -64,7 +64,7 @@ class SignInBloc extends Bloc<SignInEvent, SignInState> {
           emit(state.copyWith(
             status: SignInStatus.failure,
             errorMessage:
-                'Tài khoản này không có quyền truy cập màn hình này.',
+                'This account does not have access.',
           ));
           return;
         }

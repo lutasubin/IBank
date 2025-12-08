@@ -106,15 +106,18 @@ class SignInView extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
                         const SignInForm(),
-                        const SizedBox(height: 16),
-                        Center(
-                          child: TextButton(
-                            onPressed: () {
-                              Navigator.pushNamed(context, '/admin-signin');
-                            },
-                            child: const Text('Đăng nhập quản trị'),
-                          ),
-                        ),
+
+                        
+                        //! demo phan quyen
+                        // const SizedBox(height: 16),
+                        // Center(
+                        //   child: TextButton(
+                        //     onPressed: () {
+                        //       Navigator.pushNamed(context, '/admin-signin');
+                        //     },
+                        //     child: const Text('Đăng nhập quản trị'),
+                        //   ),
+                        // ),
                       ],
                     ),
                   ),
