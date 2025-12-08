@@ -63,60 +63,26 @@
 
 ---
 
-### 4. Forgot Password (email + code 8422)
+### 4. Forgot Password (Firebase email reset)
 
-- **UI**: `ForgotPasswordPage` (Stateful) với 2 bước:
-  1. **Nhập email**
-     - TextField email với `TextEditingController` giữ state.
-     - Nút **Send** chỉ active khi email hợp lệ và không loading.
-  2. **Nhập code**
-     - TextField code 4 số, bàn phím số.
-     - Nút **Change password** active khi code đủ 4 kí tự và hợp lệ.
-     - Link `"Change your email"` → `Navigator.pop()` quay lại bước email.
+- **UI**: `ForgotPasswordPage` chỉ còn 1 bước nhập email, bấm gửi → hiển thị thông báo “Email reset đã được gửi…”, sau đó quay lại màn trước.
 - **BLoC**:
-  - `ForgotPasswordBloc` + `ForgotPasswordState` + `ForgotPasswordEvent`.
-  - `step`: `enterEmail` / `enterCode`.
+  - `ForgotPasswordBloc` + `ForgotPasswordState` + `ForgotPasswordEvent` (chỉ còn email + send).
   - `status`: `initial/loading/success/failure`.
-  - Use cases:
-    - `RequestResetCodeUseCase(email)`.
-    - `VerifyResetCodeUseCase(email, code)`.
+  - Use case: `RequestResetCodeUseCase(email)` (gọi Firebase `sendPasswordResetEmail`).
 - **Logic listener**:
-  - Gửi code thành công:
-    - `status == success`, `step == enterCode`, `state.code.isEmpty` → show SnackBar `"Verification code has been sent (8422)"`.
-  - Verify code thành công:
-    - `status == success`, `step == enterCode`, `state.code.isNotEmpty` → `pushReplacementNamed('/change-password', args: {'email': state.email})`.
+  - Thành công: SnackBar hướng dẫn kiểm tra email, rồi `Navigator.pop`.
+  - Thất bại: SnackBar lỗi.
 - **Data / domain**:
-  - `PasswordRemoteDataSourceImpl` dùng `MockAuthStore`:
-    - `requestResetCode(email)` → `MockAuthStore.requestPasswordReset(email)` (set code `'8422'`).  
-    - `verifyResetCode(email, code)` → `MockAuthStore.verifyResetCode`.
-
-> **Firebase TODO** (gợi ý):
-> - Dùng `FirebaseAuth.sendPasswordResetEmail(email)` hoặc custom OTP với Firestore/Cloud Functions.
-> - Khi dùng flow reset của Firebase, có thể bỏ phần verify code custom và chỉ mở link reset trong app/webview.
+  - `PasswordRemoteDataSourceImpl.requestResetCode` → `FirebaseAuth.sendPasswordResetEmail`.
+  - `verifyResetCode` không dùng; `changePassword` ném lỗi hướng dẫn dùng link reset (Firebase xử lý oobCode).
 
 ---
 
 ### 5. Change Password
 
-- **UI**: `ChangePasswordPage` (Stateful):
-  - Nhận `email` qua `ModalRoute.arguments` từ màn Forgot.
-  - Hai trạng thái:
-    1. **Form**: nhập `New password` + `Confirm password`.
-    2. **Success**: màn hình thành công với illustration + nút **Ok** quay về `'/'` và clear stack (`pushNamedAndRemoveUntil`).
-  - TextField dùng controller `_newController`, `_confirmController` được đồng bộ một chiều với state để tránh lỗi “gõ ngược/nhảy con trỏ”.
-- **BLoC**:
-  - `ChangePasswordBloc` + `ChangePasswordState` + `ChangePasswordEvent`.
-  - Domain:
-    - `ChangePasswordUseCase(ChangePasswordParams(email, newPassword))`.
-  - Validate:
-    - `Validators.isValidPassword(newPassword)`.
-    - `confirmPassword == newPassword`.
-  - Thành công: `step = success`, hiển thị màn thành công.
-- **Data / domain**:
-  - `PasswordRemoteDataSourceImpl.changePassword` → `MockAuthStore.changePassword(email, newPassword)`.
-
-> **Firebase TODO**:
-> - Với flow reset chính thức của Firebase, đổi mật khẩu thường do Firebase xử lý qua link email; nếu muốn giữ flow custom, có thể dùng Cloud Functions để verify OTP và cập nhật password trong Firebase Auth.
+- App hiện không dùng màn ChangePassword (reset thực hiện trên trang web qua link email của Firebase).
+- Nếu muốn đổi mật khẩu trong app bằng oobCode: cần bắt deep link và dùng `confirmPasswordReset(oobCode, newPassword)`, thêm route/màn hình khi cần.
 
 ---
 
@@ -135,7 +101,6 @@
   - `'/'` → `SignInPage`.
   - `'/signup'` → `SignUpPage`.
   - `'/forgot-password'` → `ForgotPasswordPage`.
-  - `'/change-password'` → `ChangePasswordPage`.
   - `'/home'` → `HomePage`.
 
 ---
@@ -158,9 +123,17 @@
 3. Thay thế logic trong các datasource sau:
    - `AuthRemoteDataSourceImpl.signIn` → dùng `FirebaseAuth`.
    - `SignUpRemoteDataSourceImpl.signUp` → `FirebaseAuth` + `Firestore`.
-   - `PasswordRemoteDataSourceImpl` (3 method) → triển khai bằng `FirebaseAuth` hoặc flow OTP custom.
+   - `PasswordRemoteDataSourceImpl`:
+     - `requestResetCode` → `FirebaseAuth.sendPasswordResetEmail` (đã làm).
+       - Sử dụng `actionCodeSettings` với domain website của bạn (ví dụ `https://www.ibank.com/reset`), `handleCodeInApp=true`, `androidPackageName com.example.ibank`, `iOSBundleId com.example.ibank`.
+     - `changePassword` → `FirebaseAuth.confirmPasswordReset(oobCode, newPassword)` (đã làm).
+     - `verifyResetCode` bỏ qua (oobCode trong link Firebase).
 4. Xoá/disable `MockAuthStore` khi đã có backend thật.
 5. Không cần thay đổi BLoC, UI, UseCase, route – chúng đã tách biệt với tầng data.
+6. Flow reset email:
+   - Gửi email với `actionCodeSettings` (handleCodeInApp=true) dùng domain website đã add vào Authorized domains.
+   - Bắt `oobCode` qua deep link (App Links/Universal Links) và truyền vào `ChangePasswordPage` qua `arguments['oobCode']`.
+   - `ChangePasswordPage` gọi `confirmPasswordReset` để đặt mật khẩu mới.
 
 ### 9. Gán quyền admin bằng custom claim (script kèm sẵn)
 - Service account: `serviceAccountKey/ibank-12730-firebase-adminsdk-fbsvc-ccbbbe56dc.json`.

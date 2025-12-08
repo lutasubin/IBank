@@ -30,12 +30,10 @@ class ForgotPasswordView extends StatefulWidget {
 
 class _ForgotPasswordViewState extends State<ForgotPasswordView> {
   final TextEditingController _emailController = TextEditingController();
-  final TextEditingController _codeController = TextEditingController();
 
   @override
   void dispose() {
     _emailController.dispose();
-    _codeController.dispose();
     super.dispose();
   }
 
@@ -79,34 +77,18 @@ class _ForgotPasswordViewState extends State<ForgotPasswordView> {
                           backgroundColor: AppColors.error,
                         ),
                       );
-                    } else if (state.status ==
-                            ForgotPasswordStatus.success &&
-                        state.step == ForgotPasswordStep.enterCode &&
-                        state.code.isEmpty) {
-                      // Gửi code thành công (sau bước nhập email)
+                    } else if (state.status == ForgotPasswordStatus.success) {
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(
-                          content:
-                              Text('Verification code has been sent (8422)'),
+                          content: Text(
+                              'Password reset email sent. Please check your inbox and follow the link to set a new password.'),
                         ),
                       );
-                    } else if (state.status ==
-                            ForgotPasswordStatus.success &&
-                        state.step == ForgotPasswordStep.enterCode &&
-                        state.code.isNotEmpty) {
-                      // Verify code thành công -> sang màn change password
-                      Navigator.pushReplacementNamed(
-                        context,
-                        '/change-password',
-                        arguments: {'email': state.email},
-                      );
+                      Navigator.pop(context);
                     }
                   },
                   builder: (context, state) {
-                    if (state.step == ForgotPasswordStep.enterEmail) {
-                      return _buildEmailStep(context, state);
-                    }
-                    return _buildCodeStep(context, state);
+                    return _buildEmailStep(context, state);
                   },
                 ),
               ),
@@ -130,7 +112,7 @@ class _ForgotPasswordViewState extends State<ForgotPasswordView> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Type your email',
+          'Enter your email to receive a password reset link',
           style: AppTextStyles.body2.copyWith(color: AppColors.neutral2),
         ),
         const SizedBox(height: 12),
@@ -191,7 +173,7 @@ class _ForgotPasswordViewState extends State<ForgotPasswordView> {
               ),
               const SizedBox(height: 12),
               Text(
-                'We texted you a code to verify your email.',
+                'We will send you an email with a password reset link.',
                 style: AppTextStyles.caption2.copyWith(
                   color: AppColors.neutral3,
                 ),
@@ -229,145 +211,7 @@ class _ForgotPasswordViewState extends State<ForgotPasswordView> {
                                 AlwaysStoppedAnimation<Color>(Colors.white),
                           ),
                         )
-                      : const Text('Send'),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildCodeStep(BuildContext context, ForgotPasswordState state) {
-    if (_codeController.text != state.code) {
-      _codeController.value = TextEditingValue(
-        text: state.code,
-        selection: TextSelection.collapsed(offset: state.code.length),
-      );
-    }
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'Type a code',
-          style: AppTextStyles.body2.copyWith(color: AppColors.neutral2),
-        ),
-        const SizedBox(height: 12),
-        Container(
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(16),
-            boxShadow: const [
-              BoxShadow(
-                color: Color(0x11000000),
-                blurRadius: 10,
-                offset: Offset(0, 4),
-              ),
-            ],
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              TextField(
-                controller: _codeController,
-                keyboardType: TextInputType.number,
-                maxLength: 4,
-                onChanged: (value) {
-                  context
-                      .read<ForgotPasswordBloc>()
-                      .add(ForgotPasswordCodeChanged(value));
-                },
-                decoration: InputDecoration(
-                  counterText: '',
-                  hintText: 'Code',
-                  hintStyle: AppTextStyles.body2.copyWith(
-                    color: AppColors.neutral4,
-                  ),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide(
-                      color: state.isCodeValid
-                          ? AppColors.neutral4
-                          : AppColors.error,
-                    ),
-                  ),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide(
-                      color: state.isCodeValid
-                          ? AppColors.neutral4
-                          : AppColors.error,
-                    ),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: const BorderSide(
-                      color: AppColors.primary1,
-                      width: 2,
-                    ),
-                  ),
-                  contentPadding: const EdgeInsets.all(16),
-                ),
-              ),
-              const SizedBox(height: 12),
-              Text(
-                'This code will expire in 10 minutes after this message. If you don\'t get a message, you can resend.',
-                style: AppTextStyles.caption2.copyWith(
-                  color: AppColors.neutral3,
-                ),
-              ),
-              const SizedBox(height: 16),
-              SizedBox(
-                width: double.infinity,
-                height: 48,
-                child: ElevatedButton(
-                  onPressed: !state.isCodeValid ||
-                          _codeController.text.length != 4 ||
-                          state.status == ForgotPasswordStatus.loading
-                      ? null
-                      : () {
-                          context
-                              .read<ForgotPasswordBloc>()
-                              .add(ForgotPasswordVerifyCodePressed());
-                        },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primary1,
-                    foregroundColor: Colors.white,
-                    disabledBackgroundColor:
-                        AppColors.primary1.withOpacity(0.2),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                  child: state.status == ForgotPasswordStatus.loading
-                      ? const SizedBox(
-                          width: 20,
-                          height: 20,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            valueColor:
-                                AlwaysStoppedAnimation<Color>(Colors.white),
-                          ),
-                        )
-                      : const Text('Change password'),
-                ),
-              ),
-              const SizedBox(height: 12),
-              Center(
-                child: TextButton(
-                  onPressed: () {
-                    Navigator.pop(context);
-                  },
-                  child: Text(
-                    'Change your email',
-                    style: AppTextStyles.caption2.copyWith(
-                      color: AppColors.primary1,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
+                      : const Text('Send reset email'),
                 ),
               ),
             ],
@@ -377,5 +221,4 @@ class _ForgotPasswordViewState extends State<ForgotPasswordView> {
     );
   }
 }
-
 

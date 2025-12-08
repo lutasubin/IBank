@@ -1,16 +1,33 @@
-import 'package:ibank/features/auth/shared/mock_auth_store.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
+import '../../../../../core/error/exceptions.dart';
 import 'package:ibank/features/auth/password/data/models/password_remote_datasource.dart';
 
 class PasswordRemoteDataSourceImpl implements PasswordRemoteDataSource {
-  // TODO(Firebase Auth):
-  //  - requestResetCode: dùng FirebaseAuth.sendPasswordResetEmail(email)
-  //  - verifyResetCode + changePassword: tuỳ flow custom, hoặc dùng link reset của Firebase
-  //  - MockAuthStore chỉ phục vụ cho demo local.
+  // Firebase reset flow chuẩn:
+  // - requestResetCode: gửi email reset (Firebase tự xử lý code trong link)
+  // - verifyResetCode: không dùng (link đã chứa oobCode do Firebase quản lý)
+  // - changePassword: dùng confirmPasswordReset(oobCode, newPassword) khi bạn bắt link trong app/web
 
   @override
   Future<void> requestResetCode({required String email}) async {
-    await MockAuthStore.requestPasswordReset(email: email);
+    try {
+      await FirebaseAuth.instance.sendPasswordResetEmail(
+        email: email,
+        actionCodeSettings: ActionCodeSettings(
+          // TODO: cập nhật domain website bạn sở hữu (đã add vào Authorized domains)
+          url: 'https://www.ibank.com/reset',
+          handleCodeInApp: true,
+          androidPackageName: 'com.example.ibank',
+          androidInstallApp: true,
+          iOSBundleId: 'com.example.ibank',
+        ),
+      );
+    } on FirebaseAuthException catch (e) {
+      throw ServerException(e.message ?? 'Failed to send reset email');
+    } catch (e) {
+      throw ServerException(e.toString());
+    }
   }
 
   @override
@@ -18,18 +35,26 @@ class PasswordRemoteDataSourceImpl implements PasswordRemoteDataSource {
     required String email,
     required String code,
   }) async {
-    await MockAuthStore.verifyResetCode(email: email, code: code);
+    // Không cần verify code thủ công trong flow reset email của Firebase.
+    // Nếu vẫn muốn giữ API, coi như pass-through.
+    return;
   }
 
   @override
   Future<void> changePassword({
-    required String email,
+    required String code,
     required String newPassword,
   }) async {
-    await MockAuthStore.changePassword(
-      email: email,
-      newPassword: newPassword,
-    );
+    try {
+      await FirebaseAuth.instance.confirmPasswordReset(
+        code: code,
+        newPassword: newPassword,
+      );
+    } on FirebaseAuthException catch (e) {
+      throw ServerException(e.message ?? 'Failed to reset password');
+    } catch (e) {
+      throw ServerException(e.toString());
+    }
   }
 }
 

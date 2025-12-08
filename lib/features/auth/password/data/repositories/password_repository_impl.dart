@@ -41,12 +41,12 @@ class PasswordRepositoryImpl implements PasswordRepository {
 
   @override
   Future<Either<Failure, void>> changePassword({
-    required String email,
+    required String code,
     required String newPassword,
   }) async {
     try {
       await remoteDataSource.changePassword(
-        email: email,
+        code: code,
         newPassword: newPassword,
       );
       return const Right(null);

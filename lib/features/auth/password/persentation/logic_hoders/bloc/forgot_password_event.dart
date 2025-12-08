@@ -5,13 +5,6 @@ class ForgotPasswordEmailChanged extends ForgotPasswordEvent {
   ForgotPasswordEmailChanged(this.email);
 }
 
-class ForgotPasswordCodeChanged extends ForgotPasswordEvent {
-  final String code;
-  ForgotPasswordCodeChanged(this.code);
-}
-
 class ForgotPasswordSendCodePressed extends ForgotPasswordEvent {}
-
-class ForgotPasswordVerifyCodePressed extends ForgotPasswordEvent {}
 
 

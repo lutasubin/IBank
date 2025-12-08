@@ -13,7 +13,7 @@ abstract class PasswordRepository {
   });
 
   Future<Either<Failure, void>> changePassword({
-    required String email,
+    required String code,
     required String newPassword,
   });
 }

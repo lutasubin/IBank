@@ -16,9 +16,7 @@ class ForgotPasswordBloc
     required this.verifyResetCodeUseCase,
   }) : super(const ForgotPasswordState()) {
     on<ForgotPasswordEmailChanged>(_onEmailChanged);
-    on<ForgotPasswordCodeChanged>(_onCodeChanged);
     on<ForgotPasswordSendCodePressed>(_onSendCodePressed);
-    on<ForgotPasswordVerifyCodePressed>(_onVerifyCodePressed);
   }
 
   void _onEmailChanged(
@@ -27,18 +25,6 @@ class ForgotPasswordBloc
       state.copyWith(
         email: event.email,
         isEmailValid: Validators.isValidEmail(event.email),
-        status: ForgotPasswordStatus.initial,
-        errorMessage: null,
-      ),
-    );
-  }
-
-  void _onCodeChanged(
-      ForgotPasswordCodeChanged event, Emitter<ForgotPasswordState> emit) {
-    emit(
-      state.copyWith(
-        code: event.code,
-        isCodeValid: event.code.length == 4,
         status: ForgotPasswordStatus.initial,
         errorMessage: null,
       ),
@@ -54,37 +40,6 @@ class ForgotPasswordBloc
 
     final result = await requestResetCodeUseCase(
       RequestResetCodeParams(email: state.email),
-    );
-
-    result.fold(
-      (failure) => emit(
-        state.copyWith(
-          status: ForgotPasswordStatus.failure,
-          errorMessage: failure.message,
-        ),
-      ),
-      (_) => emit(
-        state.copyWith(
-          status: ForgotPasswordStatus.success,
-          step: ForgotPasswordStep.enterCode,
-          errorMessage: null,
-        ),
-      ),
-    );
-  }
-
-  Future<void> _onVerifyCodePressed(
-      ForgotPasswordVerifyCodePressed event,
-      Emitter<ForgotPasswordState> emit) async {
-    if (!state.isCodeValid || state.code.isEmpty) return;
-
-    emit(state.copyWith(status: ForgotPasswordStatus.loading));
-
-    final result = await verifyResetCodeUseCase(
-      VerifyResetCodeParams(
-        email: state.email,
-        code: state.code,
-      ),
     );
 
     result.fold(

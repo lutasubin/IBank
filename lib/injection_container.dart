@@ -18,10 +18,8 @@ import 'package:ibank/features/auth/password/data/datasources/password_remote_da
 import 'package:ibank/features/auth/password/data/models/password_remote_datasource.dart';
 import 'package:ibank/features/auth/password/data/repositories/password_repository_impl.dart';
 import 'package:ibank/features/auth/password/domain/repositories/password_repository.dart';
-import 'package:ibank/features/auth/password/domain/usecase/change_password_usecase.dart';
 import 'package:ibank/features/auth/password/domain/usecase/request_reset_code_usecase.dart';
 import 'package:ibank/features/auth/password/domain/usecase/verify_reset_code_usecase.dart';
-import 'package:ibank/features/auth/password/persentation/logic_hoders/bloc/change_password_bloc.dart';
 import 'package:ibank/features/auth/password/persentation/logic_hoders/bloc/forgot_password_bloc.dart';
 
 final sl = GetIt.instance;
@@ -42,19 +40,13 @@ Future<void> init() async {
       verifyResetCodeUseCase: sl(),
     ),
   );
-  sl.registerFactoryParam<ChangePasswordBloc, String, void>(
-    (email, _) => ChangePasswordBloc(
-      changePasswordUseCase: sl(),
-      email: email,
-    ),
-  );
+  
 
   // Use cases
   sl.registerLazySingleton(() => SignInUseCase(sl()));
   sl.registerLazySingleton(() => SignUpUseCase(sl()));
   sl.registerLazySingleton(() => RequestResetCodeUseCase(sl()));
   sl.registerLazySingleton(() => VerifyResetCodeUseCase(sl()));
-  sl.registerLazySingleton(() => ChangePasswordUseCase(sl()));
 
   // Repository
   sl.registerLazySingleton<AuthRepository>(
