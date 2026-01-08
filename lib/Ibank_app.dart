@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:ibank/core/theme/app_theme.dart';
+import 'package:ibank/features/auth/admin/presentation/pages/admin_home_page.dart';
+import 'package:ibank/features/auth/admin/presentation/pages/admin_signin_page.dart';
 import 'package:ibank/features/auth/password/persentation/pages/forgot_password_page.dart';
 import 'package:ibank/features/auth/signin/persentation/pages/signin_page.dart';
 import 'package:ibank/features/auth/signup/persentation/pages/signup_page.dart';
@@ -23,8 +25,8 @@ class IBankApp extends StatelessWidget {
         '/signup': (context) => const SignUpPage(),
         '/forgot-password': (context) => const ForgotPasswordPage(),
         '/home': (context) => const HomePage(),
-        // '/admin-signin': (context) => const AdminSignInPage(), //!demo phan quyen
-        // '/admin-home': (context) => const AdminHomePage(), //!demo phan quyen
+        '/admin-signin': (context) => AdminSignInPage(), //!demo phan quyen
+        '/admin-home': (context) => const AdminHomePage(), //!demo phan quyen
       },
     );
   }

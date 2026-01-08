@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import '../../../../lib/core/theme/app_colors.dart';
-import '../../../../lib/core/theme/app_text_styles.dart';
+import 'package:ibank/core/theme/app_colors.dart';
+import 'package:ibank/core/theme/app_text_styles.dart';
 
 class AdminHomePage extends StatelessWidget {
   const AdminHomePage({super.key});

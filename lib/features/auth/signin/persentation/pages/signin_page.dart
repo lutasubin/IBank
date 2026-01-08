@@ -109,15 +109,15 @@ class SignInView extends StatelessWidget {
 
                         
                         //! demo phan quyen
-                        // const SizedBox(height: 16),
-                        // Center(
-                        //   child: TextButton(
-                        //     onPressed: () {
-                        //       Navigator.pushNamed(context, '/admin-signin');
-                        //     },
-                        //     child: const Text('Đăng nhập quản trị'),
-                        //   ),
-                        // ),
+                        const SizedBox(height: 16),
+                        Center(
+                          child: TextButton(
+                            onPressed: () {
+                              Navigator.pushNamed(context, '/admin-signin');
+                            },
+                            child: const Text('Đăng nhập quản trị'),
+                          ),
+                        ),
                       ],
                     ),
                   ),
